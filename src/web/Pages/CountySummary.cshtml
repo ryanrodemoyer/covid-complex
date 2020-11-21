@@ -1,0 +1,238 @@
+﻿@page "/state/{state}/{county}/summary"
+
+@using Microsoft.AspNetCore.Http
+@using Newtonsoft.Json
+@model CountySummaryModel
+@{
+    string countyTitleCase = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(Model.County);
+    string stateTitleCase = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(Model.State);
+    ViewData["Title"] = $"{countyTitleCase} County, {stateTitleCase}";
+
+    KeyValuePair<string, Dictionary<string, double>> first = Model.Analysis.StatSummary.First();
+
+    IEnumerable<AnalysisRow> summaryRows = Model.Analysis.Rows.OrderByDescending(x => x.Date).Take(14);
+
+    int netNewCasesSum = 0;
+    int netNewDeathsSum = 0;
+    foreach (var x in summaryRows)
+    {
+        netNewCasesSum += x.NetNewCases;
+        netNewDeathsSum += x.NetNewDeaths;
+    }
+
+    double residentsWithoutCovidPercentage14Days = 100 - first.Value["CumulitiveCaseCount14DaysPercent"];
+    int residentsWithoutCovidTotalPer100K = 100000 - (int) first.Value["CumulitiveCaseCount14DaysPer100K"];
+
+    string uri = $"{Request.Scheme}://{Request.Host}/state/{Model.State}/{Model.County}/summary";
+}
+
+<h2>County Summary</h2>
+<p class="font-italic">Data is current as of @summaryRows.First().Date.ToString("MM/dd/yyyy").</p>
+@*<p class="font-italic">Last updated at @Model.SiteSettings.LastUpdatedWhen</p>*@
+
+<div class="row" style="margin-bottom: 4rem">
+    <div class="col-md">
+
+        @if (@Model.TargetCounty.Population == 0)
+            {
+        <p>Do you know the population of this county? If so, let me know through a GitHub issue. This app will provide enhanced stats when the population is known.</p>
+            }
+
+        <div class="card">
+            <div class="card-header"><h2>@Model.TargetCounty.CountyName County, @Model.TargetCounty.State.StateName</h2></div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col">
+                        <div class="card mb-3">
+                            <div class="card-header"><h2>The Lead</h2></div>
+                            <div class="card-body">
+                                <p class="lead">In the past 14 days, @residentsWithoutCovidPercentage14Days% of residents in @countyTitleCase County have NOT received a positive COVID-19 test.</p>
+
+                                <p>Are you fed up? <a asp-page="Resources">Learn more</a>.</p>
+
+                                <div>
+                                    <h4>share!</h4>
+                                    <pre>In the past 14 days, @residentsWithoutCovidPercentage14Days% of residents in @countyTitleCase County have NOT received a positive COVID-19 test.
+
+See for yourself at @uri
+</pre>
+                                </div>
+
+                                <p><a asp-page="Assumptions">Learn more about this data point.</a></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h2>County Summary</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label>County Population (<a href="https://www.census.gov/data/datasets/time-series/demo/popest/2010s-counties-total.html" target="_blank">census.gov estimate</a>)</label>
+                                    <input readonly type="text" class="form-control" value="@Model.TargetCounty.Population.ToString("N0")" />
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Residents Not Tested Positive Ever (total)</label>
+                                    <input readonly type="text" class="form-control" value="@Model.Analysis.ResidentsWithoutCovidTotal.ToString("N0")" />
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Residents Not Tested Positive Ever (percent)</label>
+                                    <input readonly type="text" class="form-control" value="@Model.Analysis.ResidentsWithoutCovidPercentage%" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h2>Prior 14 Days</h2>
+                            </div>
+                            <div class="card-body">
+
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label class="font-weight-bold">Total Cases</label>
+                                            <div>@first.Value["CumulitiveCaseCount14Days"]</div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="font-weight-bold">as Percentage of County Population</label>
+                                            <div>@first.Value["CumulitiveCaseCount14DaysPercent"]%</div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="font-weight-bold">per 100,000 residents</label>
+                                            <div>@first.Value["CumulitiveCaseCount14DaysPer100K"] <span class="font-italic">per 100,000 people</span></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label class="font-weight-bold">Total Deaths</label>
+                                            <div>@Model.Analysis.StatSummary.First().Value["CumulitiveDeaths14Days"]</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h2>All Time</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label class="font-weight-bold">Total Cases</label>
+                                            <div>@Model.Analysis.CumulitiveCases.ToString("N0")</div>
+
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label class="font-weight-bold">Total Deaths</label>
+                                            <div>@Model.Analysis.CumulitiveDeaths.ToString("N0")</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 col-sm-12 mb-3">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2>14 Day Summary - Net New</h2>
+                            </div>
+
+                            <div class="card-body">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr class="font-weight-bolder">
+                                            <td>Date</td>
+                                            <td class="text-center">Net New Cases</td>
+                                            <td class="text-center">Net New Deaths</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+
+                                        @foreach (var row in summaryRows)
+                                    {
+                                        <tr>
+                                            @{ string date = $"{row.Date.Month}/{row.Date.Day}/{row.Date.Year}"; }
+                                            <td>@date</td>
+                                            <td class="text-center">@row.NetNewCases</td>
+                                            <td class="text-center">@row.NetNewDeaths</td>
+                                        </tr>
+                                    }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 col-sm-12 mb-3">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2>Did You Know?</h2>
+                            </div>
+
+                            <div class="card-body">
+                                The Centers for Disease Control has different quarantine guidelines depending on if you were exposed (and not yet sick) versus symptomatic. Refer to their page <a href="https://www.cdc.gov/coronavirus/2019-ncov/if-you-are-sick/end-home-isolation.html" target="_blank">When You Can be Around Others</a> for their latest guidance.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 col-sm-12 mb-3">
+                        <div class="card">
+                            <div class="card-header"><h2>Data Attribution</h2></div>
+                            <div class="card-body">
+                                <p class="lead">TheCovidComplex.com is powered using data from <a href="https://github.com/nytimes/covid-19-data" target="_blank">The New York Times</a> based on reports from state and local health agencies.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @*<pre>@Html.Raw(JsonConvert.SerializeObject(Model.Analysis, Formatting.Indented))</pre>*@
+
+        @*<form method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
+
+                <div class="form-group">
+                    <label asp-for="Input.EntryName"></label>
+                    <input asp-for="Input.EntryName" class="form-control"/>
+                    <span asp-validation-for="Input.EntryName" class="text-info"></span>
+                </div>
+
+                @if (!User.Identity.IsAuthenticated)
+                {
+                    <div>
+                        <p>Click the Join button to go to the login page. These details will be preserved if you login or register.</p>
+                    </div>
+                }
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-success btn-block">Join!</button>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Model.FlashMessage))
+                {
+                    <div class="flashMessage">
+                        @Model.FlashMessage
+                    </div>
+                }
+            </form>*@
+    </div>
+</div>
+
+@*@section scripts{
+        <partial name="_ValidationScriptsPartial"/>
+    }*@

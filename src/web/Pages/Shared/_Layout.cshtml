@@ -1,0 +1,90 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>The Covid Complex - @ViewData["Title"]</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css"/>
+    <link rel="stylesheet" href="~/css/site.css"/>
+
+    <link rel="stylesheet" href="~/dist/vendor.css" asp-append-version="true"/>
+    <environment names="Staging,Production">
+        <link rel="stylesheet" href="~/dist/site.css" asp-append-version="true"/>
+    </environment>
+
+    <script src="https://kit.fontawesome.com/aeeb644626.js" crossorigin="anonymous"></script>
+</head>
+<body>
+<header>
+    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <div class="container">
+            <a class="navbar-brand" asp-area="" asp-page="/Index">The Covid Complex</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
+                @*<partial name="_LoginPartial"/>*@
+                <ul class="navbar-nav flex-grow-1">
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-page="/states">States</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-page="/Resources">Resources</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-page="/about">About</a>
+                    </li>
+                    @*<li class="nav-item dropdown">
+                        <a class="nav-link text-dark dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Data
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            @if (this.User.Identity.IsAuthenticated)
+                            {
+                                <a class="dropdown-item text-dark" asp-area="" asp-page="/Authorized/CreateLeague">Create League</a>
+                            }
+                            <a class="dropdown-item text-dark" asp-area="" asp-page="/JoinLeague">Join Existing</a>
+                        </div>
+                    </li>*@
+                    @*@if (this.User.Identity.IsAuthenticated)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Authorized/Dashboard">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Authorized/GameDay">Game Day</a>
+                        </li>
+                    }*@
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+<main role="main" class="pb-3">
+    <div class="container">
+        @RenderBody()
+    </div>
+</main>
+
+<footer class="border-top footer text-muted">
+    <div class="container">
+        &copy; 2020 - The Covid Complex - a <a href="https://ryanrodemoyer.com" target="_blank">Ryan Rodemoyer</a> production.
+    </div>
+</footer>
+
+@* todo enable this only in prod *@
+<script data-goatcounter="https://covidcomplex.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+
+<script src="~/dist/vendor.js" asp-append-version="true"></script>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+
+@RenderSection("Scripts", required: false)
+</body>
+</html>

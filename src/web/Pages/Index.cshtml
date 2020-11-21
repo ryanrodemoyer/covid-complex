@@ -1,0 +1,68 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="text-center">
+    <h1 class="display-4">The Covid Complex</h1>
+    <p>Stay informed. It's harder than it sounds.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-4 col-sm-12 mb-3 ">
+        <div class="card">
+            <div class="card-header">
+                <h2>Jefferson County, Colorado</h2>
+            </div>
+            <div class="card-body">
+                <a href="/state/colorado/jefferson/summary">visit</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-12 mb-3 ">
+        <div class="card">
+            <div class="card-header">
+                <h2>Denver County, Colorado</h2>
+            </div>
+            <div class="card-body">
+                <a href="/state/colorado/denver/summary">visit</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-12 mb-3 ">
+        <div class="card">
+            <div class="card-header">
+                <h2>Allegheny County, Pennsylvania</h2>
+            </div>
+            <div class="card-body">
+                <a href="/state/pennsylvania/allegheny/summary">visit</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-12 mb-3 ">
+        <div class="card">
+            <div class="card-header">
+                <h2>Mercer County, Pennsylvania</h2>
+            </div>
+            <div class="card-body">
+                <a href="/state/pennsylvania/mercer/summary">visit</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-12 mb-3 ">
+        <div class="card">
+            <div class="card-header">
+                <h2>Lawrence County, Pennsylvania</h2>
+            </div>
+            <div class="card-body">
+                <a href="/state/pennsylvania/lawrence/summary">visit</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script src="~/dist/main.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,42 @@
+﻿@page "/state/{state}/counties"
+@model StateModel
+@{ ViewData["Title"] = "Counties"; }
+
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        @if (string.IsNullOrWhiteSpace(Model.FlashMessage))
+        {
+            <div class="card">
+                <div class="card-header">
+                    <h2>Counties in @Model.TargetState.StateName</h2>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group-flush">
+                        <li class="list-group-item">
+                            <div class="row font-weight-bold">
+                                <div class="col">County Name</div>
+                                <div class="col text-center">Population</div>
+                            </div>
+                        </li>
+                        @foreach (var county in Model.TargetState.Counties)
+                        {
+                            string route = $"/state/{Model.State.ToLower().Replace(" ", "-")}/{county.CountyName.ToLower().Replace(" ", "-")}/summary";
+                            <li class="list-group-item">
+                                <div class="row">
+                                    <div class="col"><a href="@route">@county.CountyName</a></div>
+                                    <div class="col text-center">@county.Population.ToString("N0")</div>
+                                </div>
+                            </li>
+                            @*<li class="list-group-item"><a asp-page="/state" asp-action="summary" asp-route-state="@Model.State.ToLower().Replace(" ", "-")" asp-route-county="@county.CountyName">@county.CountyName</a></li>*@
+                        }
+                    </ul>
+                </div>
+            </div>
+        }
+        else
+        {
+            <p>@Model.FlashMessage</p>
+        }
+    </div>
+</div>

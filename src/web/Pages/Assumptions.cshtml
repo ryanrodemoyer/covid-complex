@@ -1,0 +1,36 @@
+﻿@page "/assumptions"
+
+@model web.Pages.AssumptionsModel
+@{ ViewData["Title"] = "Assumptions"; }
+
+<h2>Assumptions</h2>
+
+<div class="row">
+    <div class="col">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h1>Residents Not Receiving Positive COVID-19 Test</h1>
+            </div>
+            <div class="card-body">
+                <p>This site reports the metric <span class="font-italic">Residents That Did Not Receive Positive Test for COVID-19</span>. Let me be the first to tell you this is not a 100% perfect measure.</p>
+                
+                <p>First, asymptomatic transmission of the disease can occur. It would stand to reason that many people who are infectious yet non-symptomatic do not know they are infected and do not ever take a test. Read more about <a href="https://www.who.int/news-room/q-a-detail/coronavirus-disease-covid-19-how-is-it-transmitted" target="_blank">spreading the disease</a> on this page from the World Health Organization.</p>
+                
+                <p>Second, simply not having a COVID positive test result does not imply that these persons are COVID negative. An undetermined amount of people are infectious yet undetected. Nonetheless, I think the metric still provides an insight in to just how many people are contagious even without a test result.</p>
+                
+                <p>Third, also of note is that having a COVID negative test does not imply you will continue to be COVID negative. The disease can be in your body that is growing in to a (soon to be) detectable infection. A COVID test represents your body at a snapshot in time. Just look at the chaos in the NFL season for further evidence of the shortcomings of singularly relying on a strategy that revolves around testing.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*@section Scripts
+    {
+        <script>
+        const dashboard = {
+            myLeagues: @Html.Raw(Model.MyLeaguesJson)
+        };
+        window.dashboard = dashboard;
+        </script>
+        <script src="~/dist/main.js"></script>
+    }*@
