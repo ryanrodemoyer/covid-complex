@@ -6,7 +6,7 @@
 @{
     string countyTitleCase = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(Model.County);
     string stateTitleCase = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(Model.State);
-    ViewData["Title"] = $"{countyTitleCase} County, {stateTitleCase}";
+    ViewData["Title"] = $"Summary for {countyTitleCase} County, {stateTitleCase}";
 
     KeyValuePair<string, Dictionary<string, double>> first = Model.Analysis.StatSummary.First();
 
@@ -21,9 +21,27 @@
     }
 
     double residentsWithoutCovidPercentage14Days = 100 - first.Value["CumulitiveCaseCount14DaysPercent"];
-    int residentsWithoutCovidTotalPer100K = 100000 - (int) first.Value["CumulitiveCaseCount14DaysPer100K"];
+    int residentsWithoutCovidTotalPer100K = 100000 - (int)first.Value["CumulitiveCaseCount14DaysPer100K"];
 
     string uri = $"{Request.Scheme}://{Request.Host}/state/{Model.State}/{Model.County}/summary";
+
+
+    AnalysisRow curr = summaryRows.First();
+    AnalysisRow last = summaryRows.Last();
+
+    string trending = curr.MovingAvg14DayPer100KCases == last.MovingAvg14DayPer100KCases
+        ? "FLAT"
+        : curr.MovingAvg14DayPer100KCases < last.MovingAvg14DayPer100KCases
+            ? "DECREASING"
+            : "INCREASING";
+
+    string trended = curr.MovingAvg14DayPer100KCases == last.MovingAvg14DayPer100KCases
+        ? "FLAT"
+        : curr.MovingAvg14DayPer100KCases < last.MovingAvg14DayPer100KCases
+            ? "DECREASED"
+            : "INCREASED";
+
+    string transmissionTrend = $"{countyTitleCase} County is experiencing {trending} transmission.";
 }
 
 <h2>County Summary</h2>
@@ -34,9 +52,9 @@
     <div class="col-md">
 
         @if (@Model.TargetCounty.Population == 0)
-            {
-        <p>Do you know the population of this county? If so, let me know through a GitHub issue. This app will provide enhanced stats when the population is known.</p>
-            }
+        {
+            <p>Do you know the population of this county? If so, let me know through a GitHub issue. This app will provide enhanced stats when the population is known.</p>
+        }
 
         <div class="card">
             <div class="card-header"><h2>@Model.TargetCounty.CountyName County, @Model.TargetCounty.State.StateName</h2></div>
@@ -46,19 +64,21 @@
                         <div class="card mb-3">
                             <div class="card-header"><h2>The Lead</h2></div>
                             <div class="card-body">
-                                <p class="lead">In the past 14 days, @residentsWithoutCovidPercentage14Days% of residents in @countyTitleCase County have NOT received a positive COVID-19 test.</p>
+                                <p class="lead">In the past 14 days, @residentsWithoutCovidPercentage14Days% of residents in @countyTitleCase County have NOT received a positive COVID-19 test. @countyTitleCase County has experienced @trended transmission.</p>
 
                                 <p>Are you fed up? <a asp-page="Resources">Learn more</a>.</p>
 
                                 <div>
                                     <h4>share!</h4>
-                                    <pre>In the past 14 days, @residentsWithoutCovidPercentage14Days% of residents in @countyTitleCase County have NOT received a positive COVID-19 test.
+                                    <pre>In the past 14 days, @residentsWithoutCovidPercentage14Days% of residents in @countyTitleCase County have NOT received a positive COVID-19 test. @countyTitleCase County has experienced @trended transmission.
 
 See for yourself at @uri
 </pre>
                                 </div>
 
                                 <p><a asp-page="Assumptions">Learn more about this data point.</a></p>
+                                
+                                <p>Follow <a href="https://twitter.com/covidcomplex">TheCovidComplex.com on Twitter</a> for updates.</p>
                             </div>
                         </div>
                     </div>
@@ -95,6 +115,13 @@ See for yourself at @uri
 
                                 <div class="row">
                                     <div class="col">
+                                        <h3 class="mb-3">Cumulitive</h3>
+
+                                        @*<div class="form-group">
+                                            <label class="font-weight-bold">Total Deaths</label>
+                                            <div>@Model.Analysis.StatSummary.First().Value["CumulitiveDeaths14Days"]</div>
+                                        </div>*@
+
                                         <div class="form-group">
                                             <label class="font-weight-bold">Total Cases</label>
                                             <div>@first.Value["CumulitiveCaseCount14Days"]</div>
@@ -112,9 +139,22 @@ See for yourself at @uri
                                     </div>
 
                                     <div class="col">
+                                        <h3 class="mb-3">14 Days Ago</h3>
+
+
                                         <div class="form-group">
-                                            <label class="font-weight-bold">Total Deaths</label>
-                                            <div>@Model.Analysis.StatSummary.First().Value["CumulitiveDeaths14Days"]</div>
+                                            <label class="font-weight-bold">Total Cases</label>
+                                            <div>@first.Value["CumulitiveCaseCount14Days14DaysAgo"]</div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="font-weight-bold">as Percentage of County Population</label>
+                                            <div>@first.Value["CumulitiveCaseCount14Days14DaysAgoPercent"]%</div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="font-weight-bold">per 100,000 residents</label>
+                                            <div>@first.Value["CumulitiveCaseCount14Days14DaysAgoPer100K"] <span class="font-italic">per 100,000 people</span></div>
                                         </div>
                                     </div>
                                 </div>
@@ -148,31 +188,65 @@ See for yourself at @uri
                     <div class="col-lg-6 col-sm-12 mb-3">
                         <div class="card">
                             <div class="card-header">
-                                <h2>14 Day Summary - Net New</h2>
+                                <h2>14 Day Summary</h2>
                             </div>
 
                             <div class="card-body">
+
+                                <p>@transmissionTrend</p>
+
                                 <table class="table table-striped">
                                     <thead>
                                         <tr class="font-weight-bolder">
                                             <td>Date</td>
                                             <td class="text-center">Net New Cases</td>
                                             <td class="text-center">Net New Deaths</td>
+                                            <td class="text-center">Moving Avg Cases</td>
+                                            <td class="text-center">Moving Avg per 100K</td>
                                         </tr>
                                     </thead>
                                     <tbody>
 
                                         @foreach (var row in summaryRows)
-                                    {
-                                        <tr>
-                                            @{ string date = $"{row.Date.Month}/{row.Date.Day}/{row.Date.Year}"; }
-                                            <td>@date</td>
-                                            <td class="text-center">@row.NetNewCases</td>
-                                            <td class="text-center">@row.NetNewDeaths</td>
-                                        </tr>
-                                    }
+                                        {
+                                            <tr>
+                                                @{ string date = $"{row.Date.Month}/{row.Date.Day}/{row.Date.Year}"; }
+                                                <td>@date</td>
+                                                <td class="text-center">@row.NetNewCases</td>
+                                                <td class="text-center">@row.NetNewDeaths</td>
+                                                <td class="text-center">@row.MovingAvg14DayNetNewCases</td>
+                                                <td class="text-center">@row.MovingAvg14DayPer100KCases</td>
+                                            </tr>
+                                        }
                                     </tbody>
                                 </table>
+
+                                <ul class="list-group">
+                                    <li class="list-group-item">
+                                        <div class="row">
+                                            <div class="col-5"><span class="font-weight-bold">New New Cases</span></div>
+                                            <div class="col">Amount of new cases on this day.</div>
+                                        </div>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <div class="row">
+                                            <div class="col-5"><span class="font-weight-bold">Net New Deaths</span></div>
+                                            <div class="col">Amount of new deaths on this day.</div>
+                                        </div>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <div class="row">
+                                            <div class="col-5"><span class="font-weight-bold">Moving Avg Cases</span></div>
+                                            <div class="col">Average of how many cases recorded daily for the prior 14 days.</div>
+                                        </div>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <div class="row">
+                                            <div class="col-5"><span class="font-weight-bold">Moving Avg per 100K</span></div>
+                                            <div class="col">Average total of COVID-positive results for the prior 14 days with respect to county population.</div>
+                                        </div>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                     </div>

@@ -109,8 +109,28 @@ namespace web.Pages
             }
 
             CovidDay info = rows.Last();
+            
+            // loop the 14 most recent days
+            // calculate the average new cases per day for each of the past 14 days
+            int count = 0;
+            for (int i = results.Count - 1; ++count <= 14; i--)
+            {
+                int sum = 0;
 
-            var analysis = new CountyAnalysis();
+                int innerCount = 0;
+                for (int j = i; ++innerCount <= 14; j--)
+                {
+                    sum += results[j].NetNewCases;
+                }
+
+                int avg = sum / 14;
+
+                results[i].MovingAvg14DayPer100KCases = Convert.ToInt32(((double)sum / (double)info.County.Population) * 100000);
+                results[i].MovingAvg14DayNetNewCases = avg;
+            }
+
+
+            var analysis = new CountyAnalysis(results);
             analysis.State = info.County.State.StateName;
             analysis.County = info.County.CountyName;
             analysis.CumulitiveCases = info.Cases;
@@ -125,7 +145,7 @@ namespace web.Pages
                 analysis.ResidentsWithoutCovidPercentage = Math.Round(pct, 4) * 100d;
             }
 
-            analysis.Rows = results;
+            //analysis.Rows = results;
 
             return analysis;
         }
@@ -146,6 +166,9 @@ namespace web.Pages
         public string State { get; set; }
         public string County { get; set; }
 
+        public int MovingAvg14DayPer100KCases { get; set; }
+        public int MovingAvg14DayNetNewCases { get; set; }
+
         public int CumulitiveCases { get; set; }
         public int NetNewCases { get; set; }
 
@@ -155,7 +178,12 @@ namespace web.Pages
 
 	public class CountyAnalysis
 	{
-		public string State { get; set; }
+        public CountyAnalysis(List<AnalysisRow> results)
+        {
+            Rows = results;
+        }
+
+        public string State { get; set; }
 		public string County { get; set; }
 		public int? Population { get; set; }
 		public int CumulitiveCases { get; set; }
@@ -174,8 +202,13 @@ namespace web.Pages
 					var last = Rows[i];
 					DateTime now = last.Date;
 
-					var caseCount14Days = Rows.Where(x => x.Date <= now && x.Date > now.Subtract(Settings.NewCases2Week)).Sum(x => x.NetNewCases);
-					var deaths14Days = Rows.Where(x => x.Date <= now && x.Date > now.Subtract(Settings.NewCases2Week)).Sum(x => x.NetNewDeaths);
+
+                    var descending = Rows.OrderByDescending(x => x.Date);
+                    IEnumerable<AnalysisRow> recent = descending.Take(14);
+
+                    var caseCount14Days = recent.Sum(x => x.NetNewCases);
+					var caseCount14Days14DaysAgo = descending.Skip(13).Take(14).Sum(x => x.NetNewCases);
+					var deaths14Days = recent.Sum(x => x.NetNewDeaths);
 					var window1Week = Rows.Where(x => x.Date <= now && x.Date > now.Subtract(Settings.NewCases1Week));
 					var window2Week = Rows.Where(x => x.Date <= now && x.Date > now.Subtract(Settings.NewCases2Week));
 					var window3Week = Rows.Where(x => x.Date <= now && x.Date > now.Subtract(Settings.NewCases3Week));
@@ -189,6 +222,7 @@ namespace web.Pages
 					results.Add("NetNewDeaths", last.NetNewDeaths);
                     
 					results.Add("CumulitiveCaseCount14Days", caseCount14Days);
+					results.Add("CumulitiveCaseCount14Days14DaysAgo", caseCount14Days14DaysAgo);
 					results.Add("CumulitiveDeaths14Days", deaths14Days);
 				
                     if (Population > 0)
@@ -196,6 +230,9 @@ namespace web.Pages
                         double per150Factor = (double)Population / 150d;
                         double per100KFactor = (double)Population / 100000d;
                         results.Add("NetNewCasesPer150People", Math.Round((double)last.NetNewCases / per150Factor, 3));
+
+                        results.Add("CumulitiveCaseCount14Days14DaysAgoPercent", Math.Round(((double)caseCount14Days14DaysAgo / (double)Population) * 100, 3));
+                        results.Add("CumulitiveCaseCount14Days14DaysAgoPer100K", Convert.ToInt32((double)caseCount14Days14DaysAgo / per100KFactor));
 
                         results.Add("CumulitiveCaseCount14DaysPercent", Math.Round(((double)caseCount14Days / (double)Population) * 100, 3));
                         results.Add("CumulitiveCaseCount14DaysPer100K", Convert.ToInt32((double)caseCount14Days / per100KFactor));
