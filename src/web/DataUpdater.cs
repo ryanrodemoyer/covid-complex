@@ -124,7 +124,7 @@ namespace web
 
         private void ReadAllStatesAndCounties(CancellationToken cancellationToken)
         {
-            Dictionary<string, State> states = new DataSetFileReader(_retriever).Read(DateTime.Now.AddDays(-7));
+            Dictionary<string, State> states = new DataSetFileReader(_retriever).Read(DateTime.Now.AddDays(-45));
 
             foreach (State state in states.Values)
             {
